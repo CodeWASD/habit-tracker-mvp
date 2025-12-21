@@ -1,12 +1,13 @@
-from flask import Flask
-from backend.routes.auth import auth
+from flask import Flask, jsonify
 
 app = Flask(__name__)
-app.register_blueprint(auth)
 
 @app.route("/")
-def home():
-    return "Habit Tracker Backend is running"
+def health_check():
+    return jsonify({
+        "status": "ok",
+        "message": "Habit Tracker backend is running"
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
