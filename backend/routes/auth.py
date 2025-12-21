@@ -1,19 +1,22 @@
 from flask import Blueprint, request, jsonify
 import hashlib
-from backend.database import load_db, save_db
+from storage import read_db, write_db
 
-auth = Blueprint("auth", __name__, url_prefix="/api")
+auth_bp = Blueprint("auth", __name__)
 
-def hash_password(password):
+
+def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-@auth.route("/register", methods=["POST"])
+
+@auth_bp.route("/register", methods=["POST"])
 def register():
-    data = load_db()
+    data = read_db()
     users = data.get("users", [])
 
-    username = request.json.get("username")
-    password = request.json.get("password")
+    payload = request.get_json()
+    username = payload.get("username")
+    password = payload.get("password")
 
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
@@ -27,25 +30,30 @@ def register():
     })
 
     data["users"] = users
-    save_db(data)
+    write_db(data)
+
     return jsonify({"message": "User registered successfully"}), 201
 
-@auth.route("/login", methods=["POST"])
+
+@auth_bp.route("/login", methods=["POST"])
 def login():
-    data = load_db()
+    data = read_db()
     users = data.get("users", [])
 
-    username = request.json.get("username")
-    password = request.json.get("password")
+    payload = request.get_json()
+    username = payload.get("username")
+    password = payload.get("password")
 
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
 
     hashed = hash_password(password)
-    user = next((u for u in users if u["username"] == username and u["password"] == hashed), None)
+    user = next(
+        (u for u in users if u["username"] == username and u["password"] == hashed),
+        None
+    )
 
     if not user:
         return jsonify({"error": "Invalid credentials"}), 401
 
-    # برای سادگی در این MVP، توکن حقیقی صادر نمی‌کنیم؛ فقط پیام موفقیت می‌دهیم.
     return jsonify({"message": "Login successful"}), 200
