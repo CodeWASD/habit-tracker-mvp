@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login · HabitKit</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <main class="auth-container">
+
+    <section class="auth-brand">
+      <h1 class="app-title">HabitKit</h1>
+      <p class="auth-subtitle">Build better habits, daily</p>
+    </section>
+
+    <section class="auth-card">
+
+      <h2 id="auth-title">Login</h2>
+
+      <div class="auth-form">
+
+        <input
+          type="text"
+          id="username-input"
+          placeholder="Username"
+        />
+
+        <input
+          type="password"
+          id="password-input"
+          placeholder="Password"
+        />
+
+        <button id="auth-submit-btn" class="btn-primary">
+          Login
+        </button>
+
+      </div>
+
+      <div class="auth-switch">
+        <span id="auth-switch-text">
+          Don’t have an account?
+        </span>
+        <button id="auth-switch-btn" class="btn-secondary">
+          Register instead
+        </button>
+      </div>
+
+      <div id="auth-message" class="auth-message hidden"></div>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,55 +1,119 @@
+const loggedInUser = localStorage.getItem("username");
+
+if (!loggedInUser) {
+  window.location.href = "login.html";
+}
+
+const usernameLabel = document.getElementById("username-label");
+if (usernameLabel) {
+  usernameLabel.textContent = loggedInUser;
+}
+
+const logoutBtn = document.getElementById("logout-btn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+  });
+}
+
 const API_BASE = "http://127.0.0.1:5000/api/habits";
 
-const habitForm = document.getElementById("habit-form");
-const habitInput = document.getElementById("habit-title");
-const habitList = document.getElementById("habit-list");
+const habitList = document.querySelector(".habit-list");
+const emptyState = document.getElementById("empty-state");
 
-document.addEventListener("DOMContentLoaded", loadHabits);
+const addHabitBtn = document.getElementById("add-habit-btn");
+const addHabitSection = document.getElementById("add-habit-section");
+const habitInput = document.getElementById("habit-title-input");
+const saveHabitBtn = document.getElementById("save-habit-btn");
+const cancelHabitBtn = document.getElementById("cancel-habit-btn");
 
-function loadHabits() {
-  fetch(API_BASE)
-    .then(res => res.json())
-    .then(data => {
-      habitList.innerHTML = "";
-      data.forEach(renderHabit);
-    });
+function showAddHabit() {
+  addHabitSection.classList.remove("hidden");
+  habitInput.focus();
+}
+
+function hideAddHabit() {
+  addHabitSection.classList.add("hidden");
+  habitInput.value = "";
+}
+
+function toggleEmptyState(show) {
+  emptyState.classList.toggle("hidden", !show);
 }
 
 function renderHabit(habit) {
-  const li = document.createElement("li");
-  li.textContent = habit.title;
+  const item = document.createElement("div");
+  item.className = "habit-item";
 
-  const doneBtn = document.createElement("button");
-  doneBtn.textContent = "Done";
-  doneBtn.onclick = () => markDone(habit.id);
+  const statusBtn = document.createElement("button");
+  statusBtn.className = "habit-status";
+  statusBtn.textContent = habit.done_today ? "✅" : "⭕";
+  statusBtn.addEventListener("click", () => toggleDone(habit.id));
 
-  const delBtn = document.createElement("button");
-  delBtn.textContent = "Delete";
-  delBtn.onclick = () => deleteHabit(habit.id);
+  const title = document.createElement("span");
+  title.className = "habit-title";
+  title.textContent = habit.title;
 
-  li.append(doneBtn, delBtn);
-  habitList.appendChild(li);
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "habit-delete";
+  deleteBtn.textContent = "🗑";
+  deleteBtn.addEventListener("click", () => deleteHabit(habit.id));
+
+  item.append(statusBtn, title, deleteBtn);
+  habitList.appendChild(item);
 }
 
-habitForm.addEventListener("submit", e => {
-  e.preventDefault();
+async function loadHabits() {
+  habitList.innerHTML = "";
+  habitList.appendChild(emptyState);
 
-  fetch(API_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: habitInput.value })
-  }).then(() => {
-    habitInput.value = "";
+  try {
+    const res = await fetch(API_BASE);
+    const habits = await res.json();
+
+    if (habits.length === 0) {
+      toggleEmptyState(true);
+      return;
+    }
+
+    toggleEmptyState(false);
+    habits.forEach(renderHabit);
+  } catch (e) {}
+}
+
+async function addHabit() {
+  const title = habitInput.value.trim();
+  if (!title) return;
+
+  try {
+    await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title })
+    });
+
+    hideAddHabit();
     loadHabits();
-  });
-});
-
-function markDone(id) {
-  fetch(`${API_BASE}/${id}/done`, { method: "POST" })
-    .then(loadHabits);
+  } catch (e) {}
 }
 
-function deleteHabit(id) {
-  fetch(`${API_BASE}/${id}`, { method: "DELETE" })
-    .then(loadHabits);
+async function toggleDone(id) {
+  try {
+    await fetch(`${API_BASE}/${id}/done`, { method: "POST" });
+    loadHabits();
+  } catch (e) {}
 }
+
+async function deleteHabit(id) {
+  try {
+    await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+    loadHabits();
+  } catch (e) {}
+}
+
+addHabitBtn.addEventListener("click", showAddHabit);
+saveHabitBtn.addEventListener("click", addHabit);
+cancelHabitBtn.addEventListener("click", hideAddHabit);
+
+loadHabits();
