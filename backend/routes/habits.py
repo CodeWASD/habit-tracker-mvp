@@ -30,6 +30,7 @@ def add_habit():
 
     return jsonify(habit), 201
 
+
 @habits_bp.route("", methods=["GET"])
 def list_habits():
     data = read_db()
@@ -51,6 +52,7 @@ def mark_done(habit_id):
 
     return jsonify({"error": "Habit not found"}), 404
 
+
 @habits_bp.route("/<int:habit_id>", methods=["DELETE"])
 def delete_habit(habit_id):
     data = read_db()
@@ -63,4 +65,25 @@ def delete_habit(habit_id):
 
     data["habits"] = new_habits
     write_db(data)
+
     return jsonify({"message": "Habit deleted"}), 200
+
+
+@habits_bp.route("/<int:habit_id>", methods=["PUT"])
+def update_habit(habit_id):
+    data = read_db()
+    habits = data.get("habits", [])
+
+    payload = request.get_json()
+    new_title = payload.get("title")
+
+    if not new_title:
+        return jsonify({"error": "Title is required"}), 400
+
+    for habit in habits:
+        if habit["id"] == habit_id:
+            habit["title"] = new_title
+            write_db(data)
+            return jsonify(habit), 200
+
+    return jsonify({"error": "Habit not found"}), 404

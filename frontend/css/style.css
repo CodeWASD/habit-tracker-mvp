@@ -1,4 +1,3 @@
-
 :root {
   --bg-main: #f7f8fa;
   --bg-card: #ffffff;
@@ -8,6 +7,7 @@
 
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.08);
 
   --border-color: #e5e7eb;
 
@@ -15,6 +15,7 @@
   --radius-md: 10px;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 * {
@@ -31,12 +32,10 @@ body {
   line-height: 1.6;
 }
 
-
 .app-header {
   background-color: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 1.5rem;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -45,22 +44,22 @@ body {
 .app-title {
   font-size: 1.4rem;
   font-weight: 600;
+  letter-spacing: -0.3px;
 }
 
 .user-info {
-  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
-
-
 
 .dashboard {
   max-width: 640px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
-
-
 
 .dashboard-header {
   display: flex;
@@ -73,8 +72,6 @@ body {
   font-size: 1.2rem;
   font-weight: 600;
 }
-
-
 button {
   font-family: inherit;
   cursor: pointer;
@@ -86,21 +83,21 @@ button {
   color: #ffffff;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .btn-primary:hover {
   background-color: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
   background-color: transparent;
   color: var(--text-secondary);
   padding: 0.45rem 0.9rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
-
-
 
 .add-habit {
   background-color: var(--bg-card);
@@ -108,9 +105,9 @@ button {
   border-radius: var(--radius-md);
   padding: 1rem;
   margin-bottom: 1.5rem;
-
   display: flex;
   gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .add-habit input {
@@ -124,6 +121,7 @@ button {
 .add-habit input:focus {
   outline: none;
   border-color: var(--accent);
+  background-color: var(--accent-soft);
 }
 
 
@@ -133,19 +131,21 @@ button {
   gap: 0.75rem;
 }
 
-
-
 .habit-item {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
-
   display: flex;
   align-items: center;
   gap: 0.75rem;
-
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.habit-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .habit-status {
@@ -162,6 +162,7 @@ button {
   background: none;
   font-size: 1rem;
   color: var(--text-secondary);
+  transition: color 0.2s ease;
 }
 
 .habit-delete:hover {
@@ -180,10 +181,10 @@ button {
 }
 
 
-
 .hidden {
   display: none;
 }
+
 
 .auth-container {
   min-height: 100vh;
@@ -217,7 +218,7 @@ button {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .auth-card h2 {
@@ -252,11 +253,6 @@ button {
   color: var(--text-secondary);
 }
 
-.auth-switch button {
-  margin-left: 0.25rem;
-  padding: 0;
-}
-
 .auth-message {
   margin-top: 1rem;
   font-size: 0.85rem;
@@ -270,9 +266,26 @@ button {
 .auth-message.success {
   color: #16a34a;
 }
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.habit-title {
+  cursor: pointer;
 }
 
+.habit-edit-input {
+  flex: 1;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.habit-edit-input:focus {
+  outline: none;
+}
+
+.habit-item.editing .habit-title {
+  display: none;
+}
+
+.habit-item.editing .habit-edit-input {
+  display: block;
+}

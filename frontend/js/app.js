@@ -28,6 +28,8 @@ const habitInput = document.getElementById("habit-title-input");
 const saveHabitBtn = document.getElementById("save-habit-btn");
 const cancelHabitBtn = document.getElementById("cancel-habit-btn");
 
+let editingHabitId = null;
+
 function showAddHabit() {
   addHabitSection.classList.remove("hidden");
   habitInput.focus();
@@ -36,6 +38,7 @@ function showAddHabit() {
 function hideAddHabit() {
   addHabitSection.classList.add("hidden");
   habitInput.value = "";
+  editingHabitId = null;
 }
 
 function toggleEmptyState(show) {
@@ -45,23 +48,58 @@ function toggleEmptyState(show) {
 function renderHabit(habit) {
   const item = document.createElement("div");
   item.className = "habit-item";
+  item.dataset.id = habit.id;
 
   const statusBtn = document.createElement("button");
   statusBtn.className = "habit-status";
   statusBtn.textContent = habit.done_today ? "✅" : "⭕";
-  statusBtn.addEventListener("click", () => toggleDone(habit.id));
+  statusBtn.onclick = () => toggleDone(habit.id);
 
   const title = document.createElement("span");
   title.className = "habit-title";
   title.textContent = habit.title;
 
+  const input = document.createElement("input");
+  input.className = "habit-edit-input hidden";
+  input.value = habit.title;
+
+  title.onclick = () => {
+    item.classList.add("editing");
+    input.classList.remove("hidden");
+    input.focus();
+  };
+
+  input.onkeydown = async (e) => {
+    if (e.key === "Enter") {
+      await updateHabit(habit.id, input.value);
+      loadHabits();
+    }
+    if (e.key === "Escape") {
+      item.classList.remove("editing");
+      input.classList.add("hidden");
+    }
+  };
+
+  input.onblur = () => {
+    item.classList.remove("editing");
+    input.classList.add("hidden");
+  };
+
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "habit-delete";
   deleteBtn.textContent = "🗑";
-  deleteBtn.addEventListener("click", () => deleteHabit(habit.id));
+  deleteBtn.onclick = () => deleteHabit(habit.id);
 
-  item.append(statusBtn, title, deleteBtn);
+  item.append(statusBtn, title, input, deleteBtn);
   habitList.appendChild(item);
+}
+
+
+function startEditHabit(habit) {
+  editingHabitId = habit.id;
+  habitInput.value = habit.title;
+  addHabitSection.classList.remove("hidden");
+  habitInput.focus();
 }
 
 async function loadHabits() {
@@ -87,11 +125,20 @@ async function addHabit() {
   if (!title) return;
 
   try {
-    await fetch(API_BASE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title })
-    });
+    if (editingHabitId) {
+      await fetch(`${API_BASE}/${editingHabitId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title })
+      });
+      editingHabitId = null;
+    } else {
+      await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title })
+      });
+    }
 
     hideAddHabit();
     loadHabits();
